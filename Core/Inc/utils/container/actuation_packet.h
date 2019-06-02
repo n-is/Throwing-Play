@@ -1,0 +1,25 @@
+/*
+ * actuation_packet.h
+ *
+ * Created : 6/2/2019
+ *  Author : n-is
+ *   email : 073bex422.nischal@pcampus.edu.np
+ */
+
+##ifndef _ACTUATION_PACKET_H_
+#define _ACTUATION_PACKET_H_
+
+#include "stm32f4xx.h"
+
+struct Actuation_Packet
+{
+        bool gerege;
+        bool extend;
+        bool shoot;
+        bool grip;
+
+        float platform_angle;
+        float arm_angle;
+};
+
+#endif // !_ACTUATION_PACKET_H_
