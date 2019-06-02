@@ -10,6 +10,7 @@
                                 "${workspaceRoot}/Core/Inc/robot",
                                 "${workspaceRoot}/Core/Inc/sys",
                                 "${workspaceRoot}/Core/Inc/utils",
+                                "${workspaceRoot}/Core/Inc/parts",
                                 
                                 "C:/Users/n-is/STM32Cube/Repository/STM32Cube_FW_F4_V1.23.0/Drivers/STM32F4xx_HAL_Driver/Inc",
                                 "C:/Users/n-is/STM32Cube/Repository/STM32Cube_FW_F4_V1.23.0/Drivers/STM32F4xx_HAL_Driver/Inc/Legacy",

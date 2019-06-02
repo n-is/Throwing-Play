@@ -82,7 +82,7 @@ CXX_SOURCES = \
 Core/Src/main.cpp \
 Core/Src/robo_tasks.cpp \
 Core/Src/robot/throwing.cpp \
-Core/Src/devs/commander.cpp \
+Core/Src/parts/commander.cpp \
 Core/Src/devs/wheel.cpp \
 Core/Src/parts/int_config.cpp
 
@@ -150,6 +150,7 @@ C_INCLUDES =  \
 -ICore/Inc/utils/control \
 -ICore/Inc/devs \
 -ICore/Inc/sys \
+-ICore/Inc/parts \
 \
 -ICore/Inc \
 -IC:/Users/${USER_NAME}/STM32Cube/Repository/${STM_CUBE_VERSION}/Drivers/STM32F4xx_HAL_Driver/Inc \
@@ -239,7 +240,9 @@ $(BUILD_DIR):
 # clean up
 #######################################
 clean:
-	-rm -fR $(BUILD_DIR)
+	del /q/s $(BUILD_DIR)
+
+rebuild: clean all
   
 #######################################
 # dependencies

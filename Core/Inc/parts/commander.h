@@ -1,3 +1,11 @@
+/*
+ * commander.h
+ *
+ * Created : 6/2/2019
+ *  Author : n-is
+ *   email : 073bex422.nischal@pcampus.edu.np
+ */
+
 #ifndef _COMMANDER_H_
 #define _COMMANDER_H_
 
@@ -18,7 +26,7 @@ public:
         bool is_Empty();
         void clear();
 
-        uint8_t read();
+        uint8_t get_Command();
 
 private:
         Commander() { }

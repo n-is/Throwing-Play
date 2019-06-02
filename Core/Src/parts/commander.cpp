@@ -1,8 +1,17 @@
+/*
+ * commander.cpp
+ *
+ * Created : 6/2/2019
+ *  Author : n-is
+ *   email : 073bex422.nischal@pcampus.edu.np
+ */
+
 #include "commander.h"
 #include "usart.h"
 
+#include "defines.h"
+
 #define COMMANDER_UART  (huart2)
-#define START_BYTE      (0xA5)
 
 Queue<uint8_t, 2> gCommands;
 static uint8_t gRxData;
@@ -25,7 +34,7 @@ bool Commander::is_Empty()
         return gCommands.is_Empty();
 }
 
-uint8_t Commander::read()
+uint8_t Commander::get_Command()
 {
         return gCommands.lookup();
 }
