@@ -81,7 +81,10 @@ startup_stm32f407xx.s
 CXX_SOURCES = \
 Core/Src/main.cpp \
 Core/Src/robo_tasks.cpp \
-Core/Src/robot/throwing.cpp
+Core/Src/robot/throwing.cpp \
+Core/Src/devs/commander.cpp \
+Core/Src/devs/wheel.cpp \
+Core/Src/parts/int_config.cpp
 
 
 #######################################
@@ -143,6 +146,8 @@ C_INCLUDES =  \
 -ICore/Inc/periphs \
 -ICore/Inc/robot \
 -ICore/Inc/utils \
+-ICore/Inc/utils/container \
+-ICore/Inc/utils/control \
 -ICore/Inc/devs \
 -ICore/Inc/sys \
 \
