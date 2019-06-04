@@ -78,7 +78,6 @@ public:
         }
 
         inline void set_Angle(float a) { angle_ = a; }
-        void goto_Angle(float theta);
         float get_Angle();
 
         void update_DeltaCount();
