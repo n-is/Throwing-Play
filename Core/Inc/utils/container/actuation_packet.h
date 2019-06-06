@@ -6,7 +6,7 @@
  *   email : 073bex422.nischal@pcampus.edu.np
  */
 
-##ifndef _ACTUATION_PACKET_H_
+#ifndef _ACTUATION_PACKET_H_
 #define _ACTUATION_PACKET_H_
 
 #include "stm32f4xx.h"
@@ -21,5 +21,8 @@ struct Actuation_Packet
         float platform_angle;
         float arm_angle;
 };
+
+void reset_Actuation_Packet(Actuation_Packet &pack);
+void print_Actuation_Packet(Actuation_Packet &pack);
 
 #endif // !_ACTUATION_PACKET_H_
