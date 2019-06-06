@@ -1,19 +1,9 @@
-/*
- * actuator.h
- *
- * Created : 6/2/2019
- *  Author : rishi and nis-ane
- *   email : 073bex433.rishav@pcampus.edu.np
- *   email : 073bex421.nischal@pcampus.edu.np
- */
-
 #include <math.h>
 
 #include "actuator.h"
 #include "pid_algorithms.h"
 #include "pid.h"
-
-
+#include "stdio.h"
 
 // We should make sure that the Actuator ony have one instance and it is properly
 // instantiated
@@ -43,12 +33,41 @@ int Actuator::init()
         wheels_Init();
         // Initializes PID parameters for all wheels
         pid_Init();
+        // printf("sp   value   cal\n");
 
         return 0;
 }
 
 void Actuator::actuate(Actuation_Packet pack, uint32_t dt_millis)
 {
+        if (pack.gerege) {
+                HAL_GPIO_WritePin(Gerege_GPIO_Port, Gerege_Pin, GPIO_PIN_SET);
+        }
+        else {
+                HAL_GPIO_WritePin(Gerege_GPIO_Port, Gerege_Pin, GPIO_PIN_RESET);
+        }
+
+        if (pack.extend) {
+                HAL_GPIO_WritePin(Extend_GPIO_Port, Extend_Pin, GPIO_PIN_SET);
+        }
+        else {
+                HAL_GPIO_WritePin(Extend_GPIO_Port, Extend_Pin, GPIO_PIN_RESET);
+        }
+        
+        if (pack.grip) {
+                HAL_GPIO_WritePin(Grip_GPIO_Port, Grip_Pin, GPIO_PIN_SET);
+        }
+        else {
+                HAL_GPIO_WritePin(Grip_GPIO_Port, Grip_Pin, GPIO_PIN_RESET);
+        }
+
+        if (pack.shoot) {
+                HAL_GPIO_WritePin(Shoot_GPIO_Port, Shoot_Pin, GPIO_PIN_SET);
+        }
+        else {
+                HAL_GPIO_WritePin(Shoot_GPIO_Port, Shoot_Pin, GPIO_PIN_RESET);
+        }
+
         float set_points[2] = { pack.platform_angle, pack.arm_angle };
 
         float omega;
@@ -70,7 +89,6 @@ void Actuator::actuate(Actuation_Packet pack, uint32_t dt_millis)
                 angle = wheels_[i].get_Angle();
                 err = set_points[i] - angle;
 
-                //* Don't move for small error
                 if (fabs(err) <= 0.02) {
                         err = 0;
                 }
@@ -81,6 +99,10 @@ void Actuator::actuate(Actuation_Packet pack, uint32_t dt_millis)
 
                 omega = wheels_[i].get_Omega(dt_millis);
                 error = calc_omega - omega;
+                
+                /**/
+                // error = omega_set_points[i] - omega;
+                /**/
 
                 pid = wheels_[i].get_PIDController();
                 // The controller's output is voltage
@@ -96,10 +118,12 @@ void Actuator::actuate(Actuation_Packet pack, uint32_t dt_millis)
                 new_omega = voltage * max_omega / max_voltage;
 
                 wheels_[i].set_Omega(new_omega);
-                // printf("%ld   %ld   %ld   ", (int32_t)(set_points[i]*1000), (int32_t)(angle*1000), (int32_t)(new_omega*1000));
+                // if(i == 0)
+                //         printf("%ld   %ld   %ld   ", (int32_t)(set_points[i]*1000), (int32_t)(angle*1000), (int32_t)(new_omega*1000));
                 // wheels_[i].log(omega[i], new_omega[i]);
         }
-        // printf("\n");
+        printf("\n");
+
 
         // We don't want to delete the pointer since it was not us who allocated it
         pid = 0;
@@ -107,6 +131,8 @@ void Actuator::actuate(Actuation_Packet pack, uint32_t dt_millis)
         for (uint8_t i = 0; i < 2; ++i) {
                 wheels_[i].update();
         }
+
+        
 }
 
 
@@ -209,7 +235,7 @@ void Actuator::pid_Init()
         gAng_PID[0].set_PID(0.05, 0, 0);
         gAng_PID[0].set_Limits(1, -1);
         gAng_PID[1].set_PID(0.1, 0, 0);
-        gAng_PID[1].set_Limits(0.5, -0.5);
+        gAng_PID[1].set_Limits(2, -2);
 
         for (uint8_t i = 0; i < 2; ++i) {
                 gS_PID[i].set_Algorithm(&gSpd_PID[i]);
