@@ -36,7 +36,10 @@ bool Commander::is_Empty()
 
 uint8_t Commander::get_Command()
 {
-        return gCommands.lookup();
+        if (!is_Empty()) {
+                return gCommands.lookup();
+        }
+        return 0;
 }
 
 void Commander::clear()
