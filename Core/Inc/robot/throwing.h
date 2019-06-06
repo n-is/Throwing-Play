@@ -11,6 +11,10 @@
 
 #include "stm32f4xx.h"
 
+#include "commander.h"
+#include "processor.h"
+#include "actuator.h"
+
 class Throwing final
 {
 public:
@@ -28,6 +32,11 @@ public:
         bool is_Initiated() const;
 
 private:
+        Commander *general_;
+        Processor *brain_;
+        Actuator *soldier_;
+
+        Actuation_Packet act_pack_;
 
         bool initiated_;
         Throwing() {
