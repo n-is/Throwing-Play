@@ -11,6 +11,16 @@
 
 #include "queue_custom.h"
 
+enum Throw_Commands {
+        GRIP = 0x01,
+        ACTUATE = 0x02,
+        EXTEND = 0x03 ,
+        PASS_GEREGE = 0x04,
+        THROW = 0x05,
+        RETRIEVE = 0x06,
+        MOVE_PLATFORM_LEFT = 0x07,
+        MOVE_PLATFORM_RIGHT = 0x08
+};
 
 class Commander
 {
