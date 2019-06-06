@@ -12,4 +12,12 @@
 
 #define START_BYTE      (0xA5)
 
+//* Motor Default Configs
+#define ARM_MOTOR_PICK_ANGLE    (-170)
+#define ARM_MOTOR_HOME_ANGLE    (0)
+
+#define PLATFORM_MOTOR_RED_ANGLE        (20)
+#define PLATFORM_MOTOR_BLUE_ANGLE       (-20)
+#define PLATFORM_MOTOR_HOME_ANGLE       (0)
+
 #endif  // _DEFINES_H_

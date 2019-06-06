@@ -99,6 +99,15 @@ void Error_Handler(void);
 #define B_RedLED_GPIO_Port GPIOD
 #define B_BlueLED_Pin GPIO_PIN_15
 #define B_BlueLED_GPIO_Port GPIOD
+
+#define Gerege_GPIO_Port GPIOB
+#define Gerege_Pin GPIO_PIN_7
+#define Grip_GPIO_Port GPIOC
+#define Grip_Pin GPIO_PIN_11
+#define Extend_GPIO_Port GPIOD
+#define Extend_Pin GPIO_PIN_0
+#define Shoot_GPIO_Port GPIOB
+#define Shoot_Pin GPIO_PIN_5
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
