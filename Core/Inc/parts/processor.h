@@ -10,6 +10,7 @@
 #define _PROCESSOR_H_
 
 #include "actuation_packet.h"
+#include "commander.h"
 
 class Processor
 {
@@ -31,9 +32,9 @@ private:
 
         Processor() { reset_Actuation_Packet(last_pack_); }
 
-        void process_Gerege(Actuation_Packet &pack);
+        void process_Gerege(Actuation_Packet &pack, uint8_t cmd);
         void process_Grip(Actuation_Packet &pack);
-        void process_Extend(Actuation_Packet &pack);
+        void process_Extend(Actuation_Packet &pack, Throw_Commands cmd);
         void process_Shoot(Actuation_Packet &pack);
 
         void process_Arm(Actuation_Packet &pack);

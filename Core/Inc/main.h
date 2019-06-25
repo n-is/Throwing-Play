@@ -108,6 +108,9 @@ void Error_Handler(void);
 #define Extend_Pin GPIO_PIN_0
 #define Shoot_GPIO_Port GPIOB
 #define Shoot_Pin GPIO_PIN_5
+
+#define Extend_Shoot_GPIO_Port GPIOD
+#define Extend_Shoot_Pin GPIO_PIN_4
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

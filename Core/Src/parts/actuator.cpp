@@ -68,6 +68,13 @@ void Actuator::actuate(Actuation_Packet pack, uint32_t dt_millis)
                 HAL_GPIO_WritePin(Shoot_GPIO_Port, Shoot_Pin, GPIO_PIN_RESET);
         }
 
+        if (pack.extend_shoot) {
+                HAL_GPIO_WritePin(Extend_Shoot_GPIO_Port, Extend_Shoot_Pin, GPIO_PIN_SET);
+        }
+        else {
+                HAL_GPIO_WritePin(Extend_Shoot_GPIO_Port, Extend_Shoot_Pin, GPIO_PIN_RESET);
+        }
+
         float set_points[2] = { pack.platform_angle, pack.arm_angle };
 
         float omega;
@@ -122,7 +129,7 @@ void Actuator::actuate(Actuation_Packet pack, uint32_t dt_millis)
                 //         printf("%ld   %ld   %ld   ", (int32_t)(set_points[i]*1000), (int32_t)(angle*1000), (int32_t)(new_omega*1000));
                 // wheels_[i].log(omega[i], new_omega[i]);
         }
-        printf("\n");
+        // printf("\n");
 
 
         // We don't want to delete the pointer since it was not us who allocated it
