@@ -13,6 +13,33 @@
 
 #include "main.h"
 
+static uint32_t gExtend_Start_Time = 0;
+static bool is_Extended = false;
+static bool start_Extend = false;
+
+enum class Mechanism_State
+{
+        HOME,
+        RELEASE,
+        LEFT,
+        RIGHT
+};
+
+static Debouncer gArm_Debouncer(HAL_GetTick, 1000);
+static Mechanism_State gArm_State = Mechanism_State::HOME;
+
+static Debouncer gShoot_Debouncer(HAL_GetTick, 1000);
+static Mechanism_State gShoot_State = Mechanism_State::HOME;
+
+static Debouncer gGerege_Debouncer(HAL_GetTick, 1000);
+static Mechanism_State gGerege_State = Mechanism_State::HOME;
+
+static Debouncer gGrip_Debouncer(HAL_GetTick, 1000);
+static Mechanism_State gGrip_State = Mechanism_State::HOME;
+
+static Debouncer gPlatform_Debouncer(HAL_GetTick, 1000);
+static Mechanism_State gPlatform_State = Mechanism_State::HOME;
+
 Processor& Processor::get_Instance()
 {
         static Processor sRobo_CPU;
@@ -22,22 +49,27 @@ Processor& Processor::get_Instance()
 
 int Processor::init(uint32_t dt_millis)
 {
-
         return 0;
 }
 
 Actuation_Packet Processor::process(uint8_t cmd, uint32_t dt_millis)
 {
+
         Actuation_Packet pack = last_pack_;
 
         if (cmd == Throw_Commands::GRIP) {
                 process_Grip(pack);
         }
         else if (cmd == Throw_Commands::EXTEND) {
-                process_Extend(pack);
+                process_Extend(pack, Throw_Commands::EXTEND);
         }
-        else if (cmd == Throw_Commands::PASS_GEREGE) {
-                process_Gerege(pack);
+        else if (cmd == Throw_Commands::RETRIEVE) {
+                process_Extend(pack, Throw_Commands::RETRIEVE);
+        }
+        else if (cmd == Throw_Commands::PASS_GEREGE ||
+                 cmd == Throw_Commands::ROTATE_GEREGE) {
+
+                process_Gerege(pack, cmd);
         }
         else if (cmd == Throw_Commands::THROW) {
                 process_Shoot(pack);
@@ -51,21 +83,20 @@ Actuation_Packet Processor::process(uint8_t cmd, uint32_t dt_millis)
                 process_Platform(pack, cmd);
         }
 
+        if (is_Extended) {
+                if (HAL_GetTick() - gExtend_Start_Time >= 2000) {
+                        pack.grip = false;
+                        gGrip_State = Mechanism_State::RELEASE;
+                        is_Extended = false;
+                }
+        }
+
         last_pack_ = pack;
 
         return pack;
 }
 
-enum class Mechanism_State
-{
-        HOME,
-        RELEASE,
-        LEFT,
-        RIGHT
-};
 
-static Debouncer gArm_Debouncer(HAL_GetTick, 1000);
-static Mechanism_State gArm_State = Mechanism_State::HOME;
 void Processor::process_Arm(Actuation_Packet &pack)
 {
         Mechanism_State arm_state = gArm_State;
@@ -91,34 +122,39 @@ void Processor::process_Arm(Actuation_Packet &pack)
         }
 }
 
-static Debouncer gGerege_Debouncer(HAL_GetTick, 1000);
-static Mechanism_State gGerege_State = Mechanism_State::HOME;
-void Processor::process_Gerege(Actuation_Packet &pack)
+static bool gGerege_Pass_Down = false;
+static bool gGerege_Rotated = false;
+void Processor::process_Gerege(Actuation_Packet &pack, uint8_t cmd)
 {
-        Mechanism_State gerege_state = gGerege_State;
-        if (gGerege_Debouncer.is_Ready()) {
-                if (gGerege_State == Mechanism_State::HOME) {
-                        gerege_state = Mechanism_State::RELEASE;
+        if (cmd == Throw_Commands::PASS_GEREGE && !gGerege_Pass_Down) {
+                Mechanism_State gerege_state = gGerege_State;
+                if (gGerege_Debouncer.is_Ready()) {
+                        if (gGerege_State == Mechanism_State::HOME) {
+                                gerege_state = Mechanism_State::RELEASE;
+                        }
+                        else if (gGerege_State == Mechanism_State::RELEASE) {
+                                gerege_state = Mechanism_State::HOME;
+                        }
+                        gGerege_Debouncer.hold();
                 }
-                else if (gGerege_State == Mechanism_State::RELEASE) {
-                        gerege_state = Mechanism_State::HOME;
-                }
-                gGerege_Debouncer.hold();
-        }
 
-        if (gerege_state != gGerege_State) {
-                gGerege_State = gerege_state;
-                if (gGerege_State == Mechanism_State::HOME) {
-                        pack.gerege = false;
+                if (gerege_state != gGerege_State) {
+                        gGerege_State = gerege_state;
+                        if (gGerege_State == Mechanism_State::HOME) {
+                                pack.gerege = false;
+                        }
+                        else if (gGerege_State == Mechanism_State::RELEASE) {
+                                pack.gerege = true;
+                                gGerege_Pass_Down = true;
+                        }
                 }
-                else if (gGerege_State == Mechanism_State::RELEASE) {
-                        pack.gerege = true;
-                }
+        }
+        else if (cmd == Throw_Commands::ROTATE_GEREGE && !gGerege_Rotated) {
+                pack.rotate_gerege = true;
+                gGerege_Rotated = true;
         }
 }
 
-static Debouncer gGrip_Debouncer(HAL_GetTick, 1000);
-static Mechanism_State gGrip_State = Mechanism_State::HOME;
 void Processor::process_Grip(Actuation_Packet &pack)
 {
         Mechanism_State grip_state = gGrip_State;
@@ -143,34 +179,35 @@ void Processor::process_Grip(Actuation_Packet &pack)
         }
 }
 
-static Debouncer gExtend_Debouncer(HAL_GetTick, 1000);
-static Mechanism_State gExtend_State = Mechanism_State::HOME;
-void Processor::process_Extend(Actuation_Packet &pack)
+static Debouncer gExtend_Debouncer(HAL_GetTick, 500);
+void Processor::process_Extend(Actuation_Packet &pack, Throw_Commands cmd)
 {
-        Mechanism_State extend_state = gExtend_State;
         if (gExtend_Debouncer.is_Ready()) {
-                if (gExtend_State == Mechanism_State::HOME) {
-                        extend_state = Mechanism_State::RELEASE;
+                if (cmd == Throw_Commands::EXTEND) {
+                        pack.extend = true;
+                        pack.gerege = true;
+                        gGerege_State = Mechanism_State::RELEASE;
+                        pack.rotate_gerege = false;
+                        pack.extend_shoot = true;
+
+                        if (!start_Extend) {
+                                start_Extend = true;
+                                gExtend_Start_Time = HAL_GetTick();
+                                is_Extended = true;
+                        }
                 }
-                else if (gExtend_State == Mechanism_State::RELEASE) {
-                        extend_state = Mechanism_State::HOME;
+                else if (cmd == Throw_Commands::RETRIEVE) {
+                        pack.extend = false;
+                        pack.shoot = false;
+                        gShoot_State = Mechanism_State::HOME;
+                        start_Extend = false;
+                        
+                        pack.extend_shoot = false;
                 }
                 gExtend_Debouncer.hold();
         }
-
-        if (extend_state != gExtend_State) {
-                gExtend_State = extend_state;
-                if (gExtend_State == Mechanism_State::HOME) {
-                        pack.extend = false;
-                }
-                else if (gExtend_State == Mechanism_State::RELEASE) {
-                        pack.extend = true;
-                }
-        }
 }
 
-static Debouncer gShoot_Debouncer(HAL_GetTick, 1000);
-static Mechanism_State gShoot_State = Mechanism_State::HOME;
 void Processor::process_Shoot(Actuation_Packet &pack)
 {
         Mechanism_State shoot_state = gShoot_State;
@@ -190,13 +227,14 @@ void Processor::process_Shoot(Actuation_Packet &pack)
                         pack.shoot = false;
                 }
                 else if (gShoot_State == Mechanism_State::RELEASE) {
+                        pack.grip = false;
+                        gGrip_State = Mechanism_State::RELEASE;
+
                         pack.shoot = true;
                 }
         }
 }
 
-static Debouncer gPlatform_Debouncer(HAL_GetTick, 1000);
-static Mechanism_State gPlatform_State = Mechanism_State::HOME;
 void Processor::process_Platform(Actuation_Packet &pack, uint8_t cmd)
 {
         Mechanism_State platform_state = gPlatform_State;
