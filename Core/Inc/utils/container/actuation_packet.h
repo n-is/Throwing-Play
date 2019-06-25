@@ -14,9 +14,11 @@
 struct Actuation_Packet
 {
         bool gerege;
+        bool rotate_gerege;
         bool extend;
         bool shoot;
         bool grip;
+        bool extend_shoot;
 
         float platform_angle;
         float arm_angle;

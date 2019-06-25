@@ -19,7 +19,8 @@ enum Throw_Commands {
         THROW = 0x05,
         RETRIEVE = 0x06,
         MOVE_PLATFORM_LEFT = 0x07,
-        MOVE_PLATFORM_RIGHT = 0x08
+        MOVE_PLATFORM_RIGHT = 0x08,
+        ROTATE_GEREGE = 0x09
 };
 
 class Commander
