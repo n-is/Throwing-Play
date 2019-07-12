@@ -34,7 +34,7 @@ static Mechanism_State gShoot_State = Mechanism_State::HOME;
 static Debouncer gGerege_Debouncer(HAL_GetTick, 1000);
 static Mechanism_State gGerege_State = Mechanism_State::HOME;
 
-static Debouncer gGrip_Debouncer(HAL_GetTick, 1000);
+static Debouncer gGrip_Debouncer(HAL_GetTick, 500);
 static Mechanism_State gGrip_State = Mechanism_State::HOME;
 
 static Debouncer gPlatform_Debouncer(HAL_GetTick, 1000);
@@ -47,9 +47,17 @@ Processor& Processor::get_Instance()
         return sRobo_CPU;
 }
 
-int Processor::init(uint32_t dt_millis)
+Actuation_Packet Processor::init(uint32_t dt_millis)
 {
-        return 0;
+        Actuation_Packet pack;
+        reset_Actuation_Packet(pack);
+
+        // pack.grip = true;
+        // gGrip_State = Mechanism_State::RELEASE;
+
+        last_pack_ = pack;
+
+        return pack;
 }
 
 Actuation_Packet Processor::process(uint8_t cmd, uint32_t dt_millis)
@@ -75,6 +83,7 @@ Actuation_Packet Processor::process(uint8_t cmd, uint32_t dt_millis)
                 process_Shoot(pack);
         }
         else if (cmd == Throw_Commands::ACTUATE) {
+                HAL_GPIO_WritePin(B_BlueLED_GPIO_Port, B_BlueLED_Pin, GPIO_PIN_SET);
                 process_Arm(pack);
         }
         else if (cmd == Throw_Commands::MOVE_PLATFORM_LEFT ||
@@ -83,13 +92,13 @@ Actuation_Packet Processor::process(uint8_t cmd, uint32_t dt_millis)
                 process_Platform(pack, cmd);
         }
 
-        if (is_Extended) {
-                if (HAL_GetTick() - gExtend_Start_Time >= 2000) {
-                        pack.grip = false;
-                        gGrip_State = Mechanism_State::RELEASE;
-                        is_Extended = false;
-                }
-        }
+        // if (is_Extended) {
+        //         if (HAL_GetTick() - gExtend_Start_Time >= 7000) {
+        //                 pack.grip = false;
+        //                 gGrip_State = Mechanism_State::RELEASE;
+        //                 is_Extended = false;
+        //         }
+        // }
 
         last_pack_ = pack;
 
@@ -145,6 +154,8 @@ void Processor::process_Gerege(Actuation_Packet &pack, uint8_t cmd)
                         }
                         else if (gGerege_State == Mechanism_State::RELEASE) {
                                 pack.gerege = true;
+                                pack.grip = true;
+                                gGrip_State = Mechanism_State::RELEASE;
                                 gGerege_Pass_Down = true;
                         }
                 }
