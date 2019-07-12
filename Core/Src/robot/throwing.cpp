@@ -34,8 +34,8 @@ int Throwing::init(uint32_t dt_millis)
         int status = 0;
 
         general_->init();
-        brain_->init(dt_millis);
-        soldier_->init();
+        Actuation_Packet pack = brain_->init(dt_millis);
+        soldier_->init(pack);
 
         initiated_ = true;
 

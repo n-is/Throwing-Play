@@ -24,7 +24,7 @@ public:
 
         static Actuator& get_Instance();
 
-        int init();
+        int init(Actuation_Packet pack);
         void actuate(Actuation_Packet pack, uint32_t dt_millis);
         uint32_t stop(uint32_t dt_millis, uint32_t max_time = 1000);
         void clear();
@@ -33,6 +33,7 @@ private:
         Wheel wheels_[2];
 
         Actuator() { }
+        void actuate_Pneumatics(Actuation_Packet pack);
         void wheels_Init();
         void pid_Init();
 };

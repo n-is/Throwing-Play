@@ -23,7 +23,7 @@ public:
 
         static Processor& get_Instance();
         
-        int init(uint32_t dt_millis);
+        Actuation_Packet init(uint32_t dt_millis);
 
         Actuation_Packet process(uint8_t cmd, uint32_t dt_millis);
 

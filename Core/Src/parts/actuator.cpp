@@ -27,18 +27,118 @@ Actuator& Actuator::get_Instance()
  * 2) Call the software initializations for utilities like pid for wheels
  * </pre>
  */
-int Actuator::init()
+int Actuator::init(Actuation_Packet pack)
 {
         // Initialize all wheels of the robot
         wheels_Init();
         // Initializes PID parameters for all wheels
         pid_Init();
         // printf("sp   value   cal\n");
+        actuate_Pneumatics(pack);
 
         return 0;
 }
 
 void Actuator::actuate(Actuation_Packet pack, uint32_t dt_millis)
+{
+        actuate_Pneumatics(pack);
+        
+        wheels_[1].update_DeltaCount();
+
+        // *** Correct Motor's Moving *** //
+
+        if (fabsf(pack.arm_angle - ARM_MOTOR_HOME_ANGLE) < 10) {
+
+                // Read Limit Switch and Correct Arm Angle to zero if set
+                GPIO_PinState ls_state = HAL_GPIO_ReadPin(THROWING_SWITCH_GPIO_Port, THROWING_SWITCH_Pin);
+                if (ls_state != GPIO_PIN_SET) {
+                        wheels_[1].set_Angle(pack.arm_angle);
+                        printf("Limit Switch On!!\n");
+                }
+
+                float arm_angle = fabsf(ARM_MOTOR_HOME_ANGLE - wheels_[1].get_Angle());
+
+                if (arm_angle < 5) {
+
+                        // if arm_angle < 1 and Limit Switch is clear, set arm angle to
+                        // some value in between home position and shagai picking pos,
+                        // but closer to home position
+
+                        if (ls_state == GPIO_PIN_SET) {
+                                wheels_[1].set_Angle(ARM_MOTOR_ERROR_ANGLE);
+                                printf("Limit Switch Off!!\n");
+                        }
+                }
+
+                printf("%ld, %ld\n", (int32_t)(pack.arm_angle), (int32_t)(wheels_[1].get_Angle()));
+        }
+        // *** Correct Motor's Moving End *** //
+
+        float set_points[2] = { pack.platform_angle, pack.arm_angle };
+
+        float omega;
+        float angle;
+        float calc_omega;
+        float error;
+        float err;
+        float voltage;
+        float new_omega;
+        PID *pid;
+        float max_voltage;
+        float max_omega;
+
+        // printf("%ld   ", HAL_GetTick());
+        
+        angle = wheels_[1].get_Angle();
+        err = set_points[1] - angle;
+
+        if (fabs(err) <= 0.02) {
+                err = 0;
+        }
+
+        pid = wheels_[1].get_AnglePIDController();
+        // Use angle pid to compute omega
+        calc_omega = pid->compute_PID(err, dt_millis);
+
+        omega = wheels_[1].get_Omega(dt_millis);
+        error = calc_omega - omega;
+        
+        /**/
+        // error = omega_set_points[i] - omega;
+        /**/
+
+        pid = wheels_[1].get_PIDController();
+        // The controller's output is voltage
+        voltage = pid->compute_PID(error, dt_millis);
+
+        // Max Omega corresponds to the max voltage value
+        max_voltage = fabsf(pid->get_Algorithm()->get_Upper());
+        max_omega = wheels_[1].get_MaxOmega();
+        // Controller's output voltage is converted to the corresponding
+        // omega according to linear relation since we will just be
+        // output-ting voltage and this is just a abstraction of the
+        // motor driver
+        new_omega = voltage * max_omega / max_voltage;
+
+        wheels_[1].set_Omega(new_omega);
+        // if(i == 0)
+        //         printf("%ld   %ld   %ld   ", (int32_t)(set_points[i]*1000), (int32_t)(angle*1000), (int32_t)(new_omega*1000));
+        // wheels_[i].log(omega[i], new_omega[i]);
+
+        // printf("\n");
+
+
+        // We don't want to delete the pointer since it was not us who allocated it
+        pid = 0;
+
+        for (uint8_t i = 0; i < 2; ++i) {
+                wheels_[i].update();
+        }
+
+        
+}
+
+void Actuator::actuate_Pneumatics(Actuation_Packet pack)
 {
         if (pack.gerege) {
                 HAL_GPIO_WritePin(Gerege_GPIO_Port, Gerege_Pin, GPIO_PIN_SET);
@@ -74,72 +174,6 @@ void Actuator::actuate(Actuation_Packet pack, uint32_t dt_millis)
         else {
                 HAL_GPIO_WritePin(Extend_Shoot_GPIO_Port, Extend_Shoot_Pin, GPIO_PIN_RESET);
         }
-
-        float set_points[2] = { pack.platform_angle, pack.arm_angle };
-
-        float omega;
-        float angle;
-        float calc_omega;
-        float error;
-        float err;
-        float voltage;
-        float new_omega;
-        PID *pid;
-        float max_voltage;
-        float max_omega;
-
-        // printf("%ld   ", HAL_GetTick());
-        for (uint8_t i = 0; i < 2; ++i) {
-                
-                wheels_[i].update_DeltaCount();
-                
-                angle = wheels_[i].get_Angle();
-                err = set_points[i] - angle;
-
-                if (fabs(err) <= 0.02) {
-                        err = 0;
-                }
-
-                pid = wheels_[i].get_AnglePIDController();
-                // Use angle pid to compute omega
-                calc_omega = pid->compute_PID(err, dt_millis);
-
-                omega = wheels_[i].get_Omega(dt_millis);
-                error = calc_omega - omega;
-                
-                /**/
-                // error = omega_set_points[i] - omega;
-                /**/
-
-                pid = wheels_[i].get_PIDController();
-                // The controller's output is voltage
-                voltage = pid->compute_PID(error, dt_millis);
-
-                // Max Omega corresponds to the max voltage value
-                max_voltage = fabsf(pid->get_Algorithm()->get_Upper());
-                max_omega = wheels_[i].get_MaxOmega();
-                // Controller's output voltage is converted to the corresponding
-                // omega according to linear relation since we will just be
-                // output-ting voltage and this is just a abstraction of the
-                // motor driver
-                new_omega = voltage * max_omega / max_voltage;
-
-                wheels_[i].set_Omega(new_omega);
-                // if(i == 0)
-                //         printf("%ld   %ld   %ld   ", (int32_t)(set_points[i]*1000), (int32_t)(angle*1000), (int32_t)(new_omega*1000));
-                // wheels_[i].log(omega[i], new_omega[i]);
-        }
-        // printf("\n");
-
-
-        // We don't want to delete the pointer since it was not us who allocated it
-        pid = 0;
-
-        for (uint8_t i = 0; i < 2; ++i) {
-                wheels_[i].update();
-        }
-
-        
 }
 
 
