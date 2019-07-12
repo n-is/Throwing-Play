@@ -100,17 +100,30 @@ void Error_Handler(void);
 #define B_BlueLED_Pin GPIO_PIN_15
 #define B_BlueLED_GPIO_Port GPIOD
 
+#define Rotate_Gerege_GPIO_Port GPIOD
+#define Rotate_Gerege_Pin GPIO_PIN_2
 #define Gerege_GPIO_Port GPIOB
-#define Gerege_Pin GPIO_PIN_7
-#define Grip_GPIO_Port GPIOC
-#define Grip_Pin GPIO_PIN_11
-#define Extend_GPIO_Port GPIOD
-#define Extend_Pin GPIO_PIN_0
-#define Shoot_GPIO_Port GPIOB
-#define Shoot_Pin GPIO_PIN_5
+#define Gerege_Pin GPIO_PIN_5
+#define Grip_GPIO_Port GPIOB
+#define Grip_Pin GPIO_PIN_7
+#define Extend_GPIO_Port GPIOC
+#define Extend_Pin GPIO_PIN_11
+#define Shoot_GPIO_Port GPIOD
+#define Shoot_Pin GPIO_PIN_4
 
 #define Extend_Shoot_GPIO_Port GPIOD
-#define Extend_Shoot_Pin GPIO_PIN_4
+#define Extend_Shoot_Pin GPIO_PIN_0
+
+/*
+        Grip 2 B7
+        Shoot 1 D4
+        Shoot_Extend 3 D0
+        Extend_Platform 7 C11
+        Gerege 6 B5
+*/
+
+#define THROWING_SWITCH_Pin GPIO_PIN_5
+#define THROWING_SWITCH_GPIO_Port GPIOE
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
