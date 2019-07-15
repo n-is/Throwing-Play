@@ -154,8 +154,6 @@ void Processor::process_Gerege(Actuation_Packet &pack, uint8_t cmd)
                         }
                         else if (gGerege_State == Mechanism_State::RELEASE) {
                                 pack.gerege = true;
-                                pack.grip = true;
-                                gGrip_State = Mechanism_State::RELEASE;
                                 gGerege_Pass_Down = true;
                         }
                 }
@@ -238,8 +236,8 @@ void Processor::process_Shoot(Actuation_Packet &pack)
                         pack.shoot = false;
                 }
                 else if (gShoot_State == Mechanism_State::RELEASE) {
-                        pack.grip = false;
-                        gGrip_State = Mechanism_State::RELEASE;
+                        pack.grip = true;
+                        gGrip_State = Mechanism_State::HOME;
 
                         pack.shoot = true;
                 }
