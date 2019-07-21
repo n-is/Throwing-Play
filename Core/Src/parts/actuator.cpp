@@ -146,6 +146,13 @@ void Actuator::actuate_Pneumatics(Actuation_Packet pack)
         else {
                 HAL_GPIO_WritePin(Gerege_GPIO_Port, Gerege_Pin, GPIO_PIN_RESET);
         }
+        
+        if (pack.rotate_gerege) {
+                HAL_GPIO_WritePin(Rotate_Gerege_GPIO_Port, Rotate_Gerege_Pin, GPIO_PIN_SET);
+        }
+        else {
+                HAL_GPIO_WritePin(Rotate_Gerege_GPIO_Port, Rotate_Gerege_Pin, GPIO_PIN_RESET);
+        }
 
         if (pack.extend) {
                 HAL_GPIO_WritePin(Extend_GPIO_Port, Extend_Pin, GPIO_PIN_SET);

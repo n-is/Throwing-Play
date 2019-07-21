@@ -100,8 +100,8 @@ void Error_Handler(void);
 #define B_BlueLED_Pin GPIO_PIN_15
 #define B_BlueLED_GPIO_Port GPIOD
 
-#define Rotate_Gerege_GPIO_Port GPIOD
-#define Rotate_Gerege_Pin GPIO_PIN_2
+#define Rotate_Gerege_GPIO_Port GPIOA
+#define Rotate_Gerege_Pin GPIO_PIN_15
 #define Gerege_GPIO_Port GPIOB
 #define Gerege_Pin GPIO_PIN_5
 #define Grip_GPIO_Port GPIOB
